@@ -8,7 +8,9 @@ router.get("/", async (req, res) => {
     const pool = await getPool();
     const [rows] = await pool.execute(`
         SELECT 
-          d.*,
+          d.id,
+          d.name,
+          d.created_at,
           COUNT(e.id) as employee_count
         FROM departments d
         LEFT JOIN employees e ON d.id = e.department_id
@@ -35,7 +37,7 @@ router.get("/:id", async (req, res) => {
   try {
     const pool = await getPool();
     const [rows] = await pool.execute(
-      "SELECT * FROM departments WHERE id = ?",
+      "SELECT id, name, created_at FROM departments WHERE id = ?",
       [req.params.id]
     );
 
@@ -63,9 +65,8 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const pool = await getPool();
-    const { name, description } = req.body;
+    const { name } = req.body;
 
-    // Validate required fields
     if (!name) {
       return res.status(400).json({
         success: false,
@@ -73,7 +74,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Check if department already exists
     const [existingDept] = await pool.execute(
       "SELECT id FROM departments WHERE name = ?",
       [name]
@@ -87,12 +87,12 @@ router.post("/", async (req, res) => {
     }
 
     const [result] = await pool.execute(
-      "INSERT INTO departments (name, description) VALUES (?, ?)",
-      [name, description]
+      "INSERT INTO departments (name) VALUES (?)",
+      [name]
     );
 
     const [newDepartment] = await pool.execute(
-      "SELECT * FROM departments WHERE id = ?",
+      "SELECT id, name, created_at FROM departments WHERE id = ?",
       [result.insertId]
     );
 
@@ -114,9 +114,8 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const pool = await getPool();
-    const { name, description } = req.body;
+    const { name } = req.body;
 
-    // Check if department exists
     const [existingDept] = await pool.execute(
       "SELECT id FROM departments WHERE id = ?",
       [req.params.id]
@@ -129,13 +128,13 @@ router.put("/:id", async (req, res) => {
       });
     }
 
-    await pool.execute(
-      "UPDATE departments SET name = ?, description = ? WHERE id = ?",
-      [name, description, req.params.id]
-    );
+    await pool.execute("UPDATE departments SET name = ? WHERE id = ?", [
+      name,
+      req.params.id,
+    ]);
 
     const [updatedDepartment] = await pool.execute(
-      "SELECT * FROM departments WHERE id = ?",
+      "SELECT id, name, created_at FROM departments WHERE id = ?",
       [req.params.id]
     );
 
@@ -157,7 +156,6 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const pool = await getPool();
-    // Check if department exists
     const [existingDept] = await pool.execute(
       "SELECT id FROM departments WHERE id = ?",
       [req.params.id]
@@ -170,7 +168,6 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    // Check if department is being used by employees
     const [employeesUsingDept] = await pool.execute(
       "SELECT COUNT(*) as count FROM employees WHERE department_id = ?",
       [req.params.id]
