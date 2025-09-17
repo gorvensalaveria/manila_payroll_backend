@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../dbconfig.js");
+const { pool: db } = require("../dbconfig.js");
 
 // 📌 Get all employees with department info
 router.get("/", async (req, res) => {
