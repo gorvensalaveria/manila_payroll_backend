@@ -1,7 +1,6 @@
-import express from "express";
-import db from "../config/db.js";
-
+const express = require("express");
 const router = express.Router();
+const db = require("../config/db");
 
 // 📌 Get all employees with department info
 router.get("/", async (req, res) => {
@@ -128,4 +127,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
