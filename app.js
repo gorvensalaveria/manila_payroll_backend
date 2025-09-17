@@ -21,7 +21,8 @@ var usersRouter = require("./routes/users");
 
 // Generating an express app
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3001";
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "https://manila-payroll.vercel.app";
 
 var app = express();
 app.use(
